@@ -49,13 +49,13 @@ public class UserCode {
         // double power = P + I + D;
 
         double power = 
-            Main.salto.bodyIntegrator.pos * 0.7 + 
-            Main.salto.bodyIntegrator.vel * 0.7 + 
-            Main.salto.flywheelIntegrator.vel * 0.05 + 
-            Main.salto.flywheelIntegrator.pos * -0.00
+            Main.salto.bodyIntegrator.pos * 0.5 + 
+            Main.salto.bodyIntegrator.vel * 0.5 + 
+            Main.salto.flywheelIntegrator.vel * 0.03 + 
+            Main.salto.flywheelIntegrator.pos * -0.08
         ;
 
-        power += Math.copySign(0.4, -Main.salto.flywheelIntegrator.vel);
+        power += Math.copySign(0.6, Main.salto.bodyIntegrator.pos);
 
 
         power = Util.limit(power, 1);

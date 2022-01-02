@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch StateSpace",
+            "request": "launch",
+            "mainClass": "org.chis.util.StateSpace",
+            "projectName": "armsim"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
@@ -16,6 +23,6 @@
             "request": "launch",
             "mainClass": "org.chis.Main",
             "projectName": "armsim"
-        },
+        }
     ]
 }

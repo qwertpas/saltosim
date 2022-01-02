@@ -4,8 +4,8 @@ public class Constants{
 
     public static double FLYWHEEL_GEAR_RATIO = 30.0;
 
-    public static double BODY_MASS = 0.200;
-    public static double FLYWHEEL_MASS = 0.020;
+    public static double BODY_MASS = 0.050;
+    public static double FLYWHEEL_MASS = 0.050;
 
     public static double RETRACTED_LENGTH = 0.140;
     public static double FLYWHEEL_RADIUS = 0.073;
