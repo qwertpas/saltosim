@@ -131,7 +131,7 @@ public class StateSpace {
         long sum = 0;
         for(int i = 0; i < 100; i++){
             long starttime = System.nanoTime();
-            SimpleMatrix K = lqr2(Q, R, A, B);
+            lqr2(Q, R, A, B);
             long endtime = System.nanoTime();
             sum += (endtime - starttime);
         }

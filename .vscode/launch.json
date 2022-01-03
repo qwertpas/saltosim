@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch BalancingModel",
+            "request": "launch",
+            "mainClass": "org.chis.BalancingModel",
+            "projectName": "armsim"
+        },
+        {
+            "type": "java",
             "name": "Launch StateSpace",
             "request": "launch",
             "mainClass": "org.chis.util.StateSpace",

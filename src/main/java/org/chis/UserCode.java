@@ -1,26 +1,50 @@
 package org.chis;
 
 
-import java.awt.Color;
-
 import org.chis.util.MotorController;
 import org.chis.util.MotorController.MotorType;
-import org.chis.util.Util;
+import org.ejml.simple.SimpleMatrix;
 
 
 public class UserCode {
     
     MotorController flywheelMotor;
 
-    double targetAng, currentAng, prevAng = 0;
+    double l = .22;
+    double m = (2*l)*(.006*.006)*(3.14/4)*7856;
+    double M = 0.4;
+    double dt = .02;
+    double g = 9.8;
 
-    double kP = -1;
-    double kI = 0;
-    double kD = 0.0;
-    double dt = 0.010;
-
-    double error, prevError = targetAng;
-    double P, I, D = 0;
+    SimpleMatrix A = new SimpleMatrix(
+        new double[][]{
+            {1, dt, 0, 0},
+            {0,1, -(3*m*g*dt)/(7*M+4*m),0},
+            {0,0,1,dt},
+            {0,0,(3*g*(m+M)*dt)/(l*(7*M+4*m)),1}
+        }
+    );
+    SimpleMatrix B = new SimpleMatrix(
+        new double[][]{
+            {0},
+            {7*dt/(7*M+4*m)},
+            {0},
+            {-3*dt/(l*(7*M+4*m))}
+        }
+    );
+    SimpleMatrix Q = new SimpleMatrix(
+        new double[][]{
+            {1, 0, 0, 0},
+            {0, 0.0001, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 0.0001}
+        }
+    );
+    SimpleMatrix R = new SimpleMatrix(
+        new double[][]{
+            {0.0005},
+        }
+    );
 
 
     public void robotInit(){
@@ -28,59 +52,29 @@ public class UserCode {
     }
 
     public void teleopPeriodic() {
-        targetAng = 0;
-        currentAng = Main.getGyroPitch();
+        double currentAng = Main.getGyroPitch();
+        double currentAngRate = Main.getGyroPitchRate();
 
 
-        error = targetAng - currentAng;
-
-        // P = kP * error;
-
-        // D = kD * -(currentAng - prevAng) / dt;
-
-        // if(Math.abs(error) < 5){
-        //     I += kI * error * dt;
-        // }
-        // if(Math.signum(error) != Math.signum(prevError)){
-        //     I = 0;
-        // }
 
 
-        // double power = P + I + D;
 
-        double power = 
-            Main.salto.bodyIntegrator.pos * 0.5 + 
-            Main.salto.bodyIntegrator.vel * 0.5 + 
-            Main.salto.flywheelIntegrator.vel * 0.03 + 
-            Main.salto.flywheelIntegrator.pos * -0.08
-        ;
+        // double power = 
+        //     Main.salto.bodyIntegrator.pos * 0.5 + 
+        //     Main.salto.bodyIntegrator.vel * 0.5 + 
+        //     Main.salto.flywheelIntegrator.vel * 0.03 + 
+        //     Main.salto.flywheelIntegrator.pos * -0.08
+        // ;
 
-        power += Math.copySign(0.6, Main.salto.bodyIntegrator.pos);
+        // power += Math.copySign(0.6, Main.salto.bodyIntegrator.pos);
 
 
-        power = Util.limit(power, 1);
+        // power = Util.limit(power, 1);
 
-        flywheelMotor.set(power);
-        Main.graph.putNumber("power", power, Color.BLACK);
-
-        // if(System.currentTimeMillis() % 3000 < 1500){
-        //     flywheelMotor.set(1);
-
-        // }else{
-        //     flywheelMotor.set(-1);
-        // }
-
-        // System.out.println("error:" + error);
-
-        prevAng = currentAng;
-        prevError = error;
+        // flywheelMotor.set(power);
+        // Main.graph.putNumber("power", power, Color.BLACK);
     }
 
-    public double convertToDegrees(double ticks) {
-        double ticksPerRev = 42.0;
-        double degrees = ticks / ticksPerRev * 360.0;
-        return degrees;
-    }
 
     
 }
