@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import org.chis.util.GraphicDash;
 import org.chis.util.StateSpace;
+import org.chis.util.Util;
 import org.chis.util.Vector2D;
 import org.chis.util.Vector2D.Type;
 import org.ejml.simple.SimpleMatrix;
@@ -14,43 +15,45 @@ public class BalancingModel {
     public static void main(String[] args) throws InterruptedException {
         GraphicDash graph = new GraphicDash("graph", 100, true);
 
-        double l = .22;
-        double m = (2*l)*(.006*.006)*(3.14/4)*7856;
-        double M = 0.4;
-        double dt = .02;
+        double dt = .01;
+        double M = Constants.BODY_MASS;
+        double m = Constants.FLYWHEEL_MASS;
         double g = 9.8;
+        double R = Constants.RETRACTED_LENGTH;
+        double r = Constants.FLYWHEEL_RADIUS;
+        double Ib = (M + 2*m) * R * R;
+        double If = 2 * m * r * r;
+        double Tstall = 0.0004;
+        double wfree = 1885.;
     
         SimpleMatrix A = new SimpleMatrix(
             new double[][]{
-                {1, dt, 0, 0},
-                {0,1, -(3*m*g*dt)/(7*M+4*m),0},
-                {0,0,1,dt},
-                {0,0,(3*g*(m+M)*dt)/(l*(7*M+4*m)),1}
+                {1, dt, 0},
+                {(M + 2*m) * g * R * dt / Ib, 1, Tstall * dt / (Ib * wfree)},
+                {0, 0, 1 - Tstall * dt / (wfree * If)},
             }
         );
         SimpleMatrix B = new SimpleMatrix(
             new double[][]{
                 {0},
-                {7*dt/(7*M+4*m)},
-                {0},
-                {-3*dt/(l*(7*M+4*m))}
+                {-Tstall * dt / Ib},
+                {Tstall * dt / If}
             }
         );
         SimpleMatrix Q = new SimpleMatrix(
             new double[][]{
-                {1, 0, 0, 0},
-                {0, 0.0001, 0, 0},
-                {0, 0, 1, 0},
-                {0, 0, 0, 0.0001}
+                {1, 0, 0},
+                {0, 1, 0},
+                {0, 0, 1},
             }
         );
-        SimpleMatrix R = new SimpleMatrix(
+        SimpleMatrix R_cost = new SimpleMatrix(
             new double[][]{
-                {0.0005},
+                {200},
             }
         );
 
-        SimpleMatrix K = StateSpace.lqr2(Q, R, A, B);
+        SimpleMatrix K = StateSpace.lqr2(Q, R_cost, A, B);
 
         System.out.println("K");
         System.out.println(K);
@@ -58,10 +61,9 @@ public class BalancingModel {
 
         SimpleMatrix x = new SimpleMatrix(
             new double[][]{
-                {0.2},
                 {0},
-                {0.2},
-                {0}
+                {0.01},
+                {0},
             }
         );
 
@@ -80,14 +82,21 @@ public class BalancingModel {
 
 
 
-            u = K.mult(x).scale(0.1);
+            u = K.mult(x);
 
-            x = A.mult(x).plus(B.mult(u));
 
-            graph.putPoint("ang", new Vector2D(elaspedTime, x.get(0), Type.CARTESIAN), Color.RED);
-            graph.putPoint("angvel", new Vector2D(elaspedTime, x.get(1), Type.CARTESIAN), Color.BLUE);
-            graph.putPoint("x", new Vector2D(elaspedTime, x.get(2), Type.CARTESIAN), Color.GREEN);
-            graph.putPoint("xvel", new Vector2D(elaspedTime, x.get(3), Type.CARTESIAN), Color.ORANGE);
+            double power = u.get(0);
+            power = Util.limit(power, 1);
+
+
+            x = A.mult(x).plus(B.scale(power));
+
+            System.out.println(power);
+
+            // graph.putPoint("u", new Vector2D(elaspedTime, u.get(0), Type.CARTESIAN), Color.BLACK);
+            graph.putPoint("bodyAng", new Vector2D(elaspedTime, x.get(0), Type.CARTESIAN), Color.RED);
+            graph.putPoint("bodyVel", new Vector2D(elaspedTime, x.get(1), Type.CARTESIAN), Color.BLUE);
+            graph.putPoint("flyVel", new Vector2D(elaspedTime, x.get(2), Type.CARTESIAN), Color.GREEN);
         }
     }
 }

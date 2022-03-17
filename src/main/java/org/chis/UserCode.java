@@ -3,6 +3,7 @@ package org.chis;
 
 import org.chis.util.MotorController;
 import org.chis.util.MotorController.MotorType;
+import org.chis.util.Util;
 import org.ejml.simple.SimpleMatrix;
 
 
@@ -52,10 +53,11 @@ public class UserCode {
     }
 
     public void teleopPeriodic() {
-        double currentAng = Main.getGyroPitch();
-        double currentAngRate = Main.getGyroPitchRate();
+        double bodyAng = Main.salto.bodyIntegrator.pos;
+        double bodyVel = Main.salto.bodyIntegrator.vel;
+        double flyVel = Main.salto.flywheelIntegrator.vel;
 
-
+        double power = 995 * bodyAng + 118*bodyVel + 0.066 * flyVel;
 
 
 
@@ -66,12 +68,12 @@ public class UserCode {
         //     Main.salto.flywheelIntegrator.pos * -0.08
         // ;
 
-        // power += Math.copySign(0.6, Main.salto.bodyIntegrator.pos);
+        power += Math.copySign(0.3, Main.salto.bodyIntegrator.pos);
 
 
-        // power = Util.limit(power, 1);
+        power = Util.limit(power, 1);
 
-        // flywheelMotor.set(power);
+        flywheelMotor.set(power);
         // Main.graph.putNumber("power", power, Color.BLACK);
     }
 
